@@ -1,6 +1,6 @@
 # Workers Manager
 
-Skill de desarrollo y arquitectura de procesamiento asíncrono para agentes de IA y desarrolladores. Define estándares para tareas en segundo plano, colas de mensajería resilientes, workers en Python 3.12+ con `asyncio` y su integración reactiva con Express 5, PostgreSQL 17 y Next.js 15.
+Skill de arquitectura y procesamiento asíncrono. Define estándares para tareas en segundo plano, colas de trabajo resilientes, workers en Python 3.12+ con `asyncio` y su integración con Express 5, PostgreSQL 17 y Next.js 15.
 
 ---
 

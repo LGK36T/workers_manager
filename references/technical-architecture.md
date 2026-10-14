@@ -27,7 +27,7 @@
 
 ## 1. Visión General y Arquitectura del Sistema Asíncrono
 
-Para mantener la API de Express ágil y responsiva con tiempos de respuesta bajo los 100ms, cualquier operación que demande más de 200ms de procesamiento de CPU, I/O intensivo o consultas a servicios de terceros debe desacoplarse hacia un proceso independiente: un **Worker Asíncrono en Python**.
+Para mantener tiempos de respuesta bajos en el API Gateway, las operaciones que demanden procesamiento de CPU, I/O intensivo o integración con servicios externos se desacoplan hacia workers asíncronos en Python.
 
 ### Flujo Unidireccional de Información
 
@@ -115,7 +115,7 @@ Toda tarea asíncrona transita obligatoriamente por una máquina de estados estr
 ## 3. Idempotencia y Claves de Deduplicación
 
 ### Principio Fundamental
-**Todo worker debe ser estrictamente idempotente:** Si la misma tarea se procesa dos o más veces debido a reintentos de red, reconexiones o reinicio inesperado del proceso, el resultado debe ser exactamente el mismo y **no debe generar duplicados** (ej. no cobrar dos veces, no duplicar filas en tablas contables ni enviar correos repetidos).
+Todo worker debe ser estrictamente idempotente: procesar una tarea múltiples veces debido a reintentos de red o reinicios debe producir el mismo resultado sin generar efectos colaterales duplicados.
 
 ### Estrategia de Implementación
 1. **Clave de Deduplicación (`idempotency_key` o `task_id`):** Cada tarea generada por la API cuenta con un identificador único.
