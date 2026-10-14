@@ -1,52 +1,55 @@
-# Workers Manager (AI Agent Skill)
+# Workers Manager
 
-Skill especializada para guiar a los agentes de Inteligencia Artificial al diseñar, codificar, refactorizar y verificar sistemas de procesamiento asíncrono, colas de mensajería y tareas programadas en segundo plano.
-
----
-
-## 📌 ¿Qué es este Skill?
-
-**Workers Manager** establece directrices estrictas para que los agentes de IA (como Antigravity, Claude Code, Cursor, Copilot, etc.) diseñen background workers resilientes, tolerantes a fallos y con alta capacidad de procesamiento concurrente.
-
-La especificación completa del comportamiento del agente se encuentra en [SKILL.md](file:///home/LGK36T/workspace/skills/workers_manager/SKILL.md).
+Skill de arquitectura y procesamiento asíncrono. Define estándares para tareas en segundo plano, colas de trabajo resilientes, workers en Python 3.12+ con `asyncio` y su integración con Express 5, PostgreSQL 17 y Next.js 15.
 
 ---
 
-## 🎯 Directrices que impone a la IA
+## Arquitectura y Principios
 
-- **Idempotencia Estricta:** Manejo mandatorio de claves de deduplicación para prevenir efectos secundarios duplicados en reintentos.
-- **Reintentos Resilientes:** Políticas de backoff exponencial con jitter y aislamiento en Dead-Letter Queues (DLQ).
-- **Control de Ciclo de Vida:** Timeouts obligatorios y gestión de apagado agraciado (*graceful shutdown*) ante señales de parada.
-- **Trazabilidad de Mensajes:** Uso de `correlationId` para trazabilidad distribuida entre APIs y workers.
-- **Desacoplamiento:** Aislamiento total entre productores (encolado) y consumidores (ejecución de workers).
+- **Desacoplamiento Total:** Aislamiento estricto entre productores (API Gateway en Express), almacenamiento transaccional (PostgreSQL 17) y consumidores (Workers en Python).
+- **Idempotencia Estricta:** Manejo mandatorio de claves de deduplicación y verificación previa para evitar efectos colaterales duplicados en caso de reintentos.
+- **Concurrencia Segura con SKIP LOCKED:** Procedimientos de consumo en PostgreSQL (`app.async_task_claim`) que permiten escalar horizontalmente decenas de workers sin contención de bloqueos.
+- **Reintentos con Backoff Exponencial y Jitter:** Políticas de reintento calibradas que no saturan servicios externos caídos, combinadas con Dead-Letter Queues (DLQ) para fallos definitivos.
+- **Apagado Agraciado (*Graceful Shutdown*):** Intercepción de señales `SIGTERM` y `SIGINT` para finalizar trabajos en curso y cerrar ordenadamente pools de conexiones.
+- **Flujo E2E Integrado:** Disparo desde frontend (`POST /dispatch`), encolado con respuesta inmediata `202 Accepted`, procesamiento en worker, actualización de progreso y "pintado" automático en Next.js.
 
 ---
 
-## 📂 Contenido del Repositorio
+## Estructura del Repositorio
 
 ```text
 workers_manager/
-├── SKILL.md             # Instrucciones principales para el agente de IA
-├── CHANGELOG.md         # Historial de cambios del skill
-├── LICENSE              # Licencia de código abierto (MIT)
-├── README.md            # Documentación y descripción del skill
-└── .gitignore           # Exclusiones de control de versiones
+├── SKILL.md                          # Instrucciones y flujo de trabajo principal
+├── references/                       # Documentación técnica de referencia
+│   └── technical-architecture.md     # Especificación técnica exhaustiva
+├── resources/
+│   └── templates/                    # Plantillas de código reutilizables
+│       ├── worker-main.template.py           # Loop principal con graceful shutdown
+│       ├── task-handler.template.py          # Manejador de tareas idempotente
+│       ├── retry-policy.template.py          # Backoff exponencial con jitter
+│       ├── db-adapter.template.py            # Adaptador de base de datos con psycopg v3
+│       ├── task-contract.template.py         # Contratos y esquemas Pydantic v2
+│       ├── api-task-dispatcher.template.ts   # Despachador de tareas para Express 5
+│       └── frontend-task-hook.template.ts    # Store Zustand + Custom Hook para polling reactivo
+├── CHANGELOG.md                      # Historial de cambios
+├── LICENSE                           # Licencia MIT
+└── README.md                         # Este documento
 ```
 
 ---
 
-## 🚀 Uso e Integración
+## Instalación y Uso
 
-### En Google Antigravity / Asistentes IA
-Coloca este repositorio dentro del directorio de skills de tu espacio de trabajo:
+Colocar este directorio dentro de la ruta de skills del entorno de trabajo:
+
 ```bash
 .agents/skills/workers_manager/
-# o ~/.gemini/antigravity-cli/skills/workers_manager/
 ```
-El agente descubrirá automáticamente el archivo `SKILL.md` y aplicará estas directrices cuando trabaje con colas, procesos en segundo plano o cron jobs.
+
+Para consultar el flujo de trabajo completo, ver [SKILL.md](./SKILL.md).
 
 ---
 
-## 📄 Licencia
+## Licencia
 
-Este proyecto está bajo la licencia [MIT](file:///home/LGK36T/workspace/skills/workers_manager/LICENSE).
+[MIT](./LICENSE)
