@@ -83,16 +83,24 @@ Al implementar o modificar un worker o tarea asíncrona, seguir este orden:
 - Al detectar `status === 'completed'`, detener el polling, guardar los datos en el Store y "pintar" la interfaz sin bloqueos.
 - Referencia: [frontend-task-hook.template.ts](./resources/templates/frontend-task-hook.template.ts).
 
-### 8. Verificación y Pruebas
+### 8. Diseñar e Implementar Pruebas Asíncronas (Obligatorio)
+- Ubicación: `workers/tests/tasks/test_{task_name}.py`, `workers/tests/models/test_{model_name}.py`.
+- Pruebas unitarias de contratos Pydantic v2 (validación estricta de tipos en payloads de entrada y salida).
+- Pruebas asíncronas con `@pytest.mark.asyncio`: verificar reporte de progreso gradual (`update_progress`), idempotencia ante reintentos y manejo de errores con backoff.
+- Referencia: Skill `testing_manager` en `/home/LGK36T/workspace/skills/testing_manager` y [worker-test.template.py](/home/LGK36T/workspace/skills/testing_manager/resources/templates/worker-test.template.py).
+
+### 9. Verificación y Pase de Pruebas (Política de Cero Fallos)
 ```bash
-pytest tests/
+source workers/.venv/bin/activate && pytest workers/tests/ -v
 python -m src.main --test-run
 ```
+**Regla ineludible:** Si un solo test falla, la tarea NO puede darse por completada ni enviarse a control de versiones.
 
 ---
 
 ## Reglas Estrictas
 
+- **Todo debe tener test y pasarlo:** Todo task handler, contrato Pydantic y política de resiliencia debe contar con pruebas automatizadas con pytest aprobadas con 0 fallos.
 - Prohibido realizar operaciones síncronas bloqueantes (`time.sleep()`, llamadas HTTP con `requests`); usar siempre `asyncio.sleep()` y clientes asíncronos (`httpx`).
 - Cada worker o manejador debe ser estrictamente idempotente para tolerar reintentos sin generar duplicados.
 - Toda consulta de cola en base de datos debe emplear `FOR UPDATE SKIP LOCKED`.
@@ -105,4 +113,6 @@ python -m src.main --test-run
 ## Referencias y Plantillas
 
 - [Guía de Arquitectura Técnica](./references/technical-architecture.md)
+- [Skill Testing Manager](/home/LGK36T/workspace/skills/testing_manager/SKILL.md)
 - [Plantillas de Código Python y TypeScript](./resources/templates/)
+
